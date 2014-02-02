@@ -15,9 +15,7 @@ class Player(base_player.BasePlayer):
     # Distribute the fleet onto your board
     def deployFleet(self):
         """
-        Decide where you want your fleet to be deployed, then return your board.
-        The attribute to be modified is _playerBoard. You can see how it is
-        defined in the _initBoards method in the file base_player.py
+        Deploy fleet in random positions.
         """
         self._initBoards()
         destroyer = [[0, 0], [0, 1]]
@@ -26,31 +24,42 @@ class Player(base_player.BasePlayer):
         hovercraft = [[0, 0], [0, 1], [1, 1], [-1, 1], [1, 2], [-1, 2]]
         aircraftcarrier = [[0, 0], [-1, 0], [1, 0], [0, 1], [0, 2], [0, 3]]
         fleet = [destroyer, cruiser, battleship, hovercraft, aircraftcarrier]
-        boardSquares = [(x, y) for x in range(6) for y in range(6)]
-        boardSquares.extend((x, y) for x in range(6, 12) for y in range(12))
+        boardSquares = [[x, y] for x in range(6) for y in range(6)]
+        boardSquares.extend([x, y] for x in range(6, 12) for y in range(12))
         for i in fleet:
             isValid = False
+            #print "ship shape:", i
             while isValid is False:
-                r = randint(0, len(boardSquares))
+                r = randint(0, (len(boardSquares) - 1))
                 keyPoint = boardSquares[r]
+                #print "keypoint:", keyPoint
                 ship = []
                 for j in i:
                     square = []
                     square.append(j[0] + keyPoint[0])
                     square.append(j[1] + keyPoint[1])
                     ship.append(square)
+                #print "ship:", ship
                 isValid = True
-                for square in ship:
-                    a, b = square
-                    print "ab is ", a, b
-                    if self._playerBoard[a][b] == const.OCCUPIED:
-                        isValid = False
-                    elif not square in boardSquares:
-                        isValid = False
+                internalValid = False
+                while not internalValid:
+                    for square in ship:
+                        a, b = square
+                        if not square in boardSquares:
+                            isValid = False
+                            #internalValid = False
+                            #print "invalid:", square
+                        elif self._playerBoard[a][b] == const.OCCUPIED:
+                            isValid = False
+                            #internalValid = False
+                            #print "occupied:", square
+                        #print square, isValid
+                        internalValid = True
                 if isValid:
                     for square in ship:
                         a, b = square
                         self._playerBoard[a][b] = const.OCCUPIED
+                    #print "ship complete"
         #self._playerBoard[0][5]=const.OCCUPIED
         #self._playerBoard[1][5]=const.OCCUPIED
         ## Cruiser (3 squares)

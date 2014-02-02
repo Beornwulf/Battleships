@@ -125,8 +125,8 @@ def playMatch(firstPlayer, secondPlayer, rounds, gui):
 
 def timedAction(player, action, *args, **kwargs):
     try:
-        with Watchdog(watchdog_time):
-            return action(*args, **kwargs)
+        #with Watchdog(watchdog_time):
+        return action(*args, **kwargs)
     except Watchdog, e:
         print "{} took longer longer than {}s for {}()"\
             .format(player.getName(), watchdog_time, action.__name__)
