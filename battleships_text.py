@@ -10,7 +10,7 @@ listPlayers = playerloader.import_players()
 
 
 
-# Check whether the fleet is sunk 
+# Check whether the fleet is sunk
 def checkWinner(board):
     # We just need to test whether the number of hits equals the total number of squares in the fleet
     hits = 0
@@ -62,7 +62,7 @@ def playChampionship(listPlayers, rounds, gui = None):
             secondPlayerStats["Draw"] += 1
             secondPlayerStats["For"] += result[1]
             secondPlayerStats["Against"] += result[0]
-            
+
         elif result[0] > result[1]: ##Player 1 win
             firstPlayerStats["Win"] += 1
             firstPlayerStats["For"] += result[0]
@@ -70,7 +70,7 @@ def playChampionship(listPlayers, rounds, gui = None):
             secondPlayerStats["Loss"] += 1
             secondPlayerStats["For"] += result[1]
             secondPlayerStats["Against"] += result[0]
-            
+
         else:##Player 2 win
             firstPlayerStats["Loss"] += 1
             firstPlayerStats["For"] += result[0]
@@ -78,11 +78,11 @@ def playChampionship(listPlayers, rounds, gui = None):
             secondPlayerStats["Win"] += 1
             secondPlayerStats["For"] += result[1]
             secondPlayerStats["Against"] += result[0]
-            
+
 ##        raw_input("press enter!")
 
     return table
-        
+
 
 def playMatch(firstPlayer, secondPlayer, rounds, gui = None):
     scorePlayer1 = scorePlayer2 = 0
@@ -93,19 +93,19 @@ def playMatch(firstPlayer, secondPlayer, rounds, gui = None):
             gui.drawPlayer(firstPlayer.getName(), firstPlayer.getDescription(), 'left')
             gui.drawPlayer(secondPlayer.getName(), secondPlayer.getDescription(), 'right')
             gui.drawScore (scorePlayer1, scorePlayer2)
-            
+
         turn = (-1)**game
         p1, p2 = playGame(firstPlayer, secondPlayer, turn, gui)
-        
+
         scorePlayer1 += p1
         scorePlayer2 += p2
-        
+
         print "---------------- ",firstPlayer.getName(), scorePlayer1,"-",
         print scorePlayer2, secondPlayer.getName(), "----------------"
 
         if gui:
             gui.drawScore (scorePlayer1, scorePlayer2)
-    
+
     if gui:
         if scorePlayer2 > scorePlayer1 :
             gui.drawWinner('right')
@@ -113,12 +113,12 @@ def playMatch(firstPlayer, secondPlayer, rounds, gui = None):
             pass
         else:
             gui.drawWinner('left')
-    
-    
+
+
     return (scorePlayer1, scorePlayer2)
 
 
-    
+
 def playGame(firstPlayer, secondPlayer, turn, gui = None):
     # Distribute the fleet onto each player board
     player1_board = firstPlayer.deployFleet()
@@ -127,7 +127,7 @@ def playGame(firstPlayer, secondPlayer, turn, gui = None):
         for col in range(len(player1_board[row])):
             if gui and player1_board[row][col] == const.OCCUPIED:
                 gui.drawBoat('right', row, col)
-            
+
     player2_board = secondPlayer.deployFleet()
     for row in range(len(player2_board)):
         for col in range(len(player2_board[row])):
@@ -135,7 +135,7 @@ def playGame(firstPlayer, secondPlayer, turn, gui = None):
                 gui.drawBoat('left', row, col)
 
 ##    raw_input("press enter!")
-    
+
     haveWinner = False
     while not haveWinner:
         if turn > 0:
@@ -150,7 +150,7 @@ def playGame(firstPlayer, secondPlayer, turn, gui = None):
                     gui.drawHit('left', i1, i2)
                 else:
                     gui.drawMiss('left', i1, i2)
-                
+
             firstPlayer.setOutcome(outcome, i1, i2)
             secondPlayer.getOpponentMove(i1, i2)
             # Show the current board state
@@ -168,7 +168,7 @@ def playGame(firstPlayer, secondPlayer, turn, gui = None):
                     gui.drawHit('right', i1, i2)
                 else:
                     gui.drawMiss('right', i1, i2)
-                    
+
             secondPlayer.setOutcome(outcome, i1, i2)
             firstPlayer.getOpponentMove(i1, i2)
             # Show the current board state
@@ -196,19 +196,19 @@ def printTable(table, listPlayers):
         setsFor = stats["For"]
         setsAgainst = stats["Against"]
         listResults.append((points, setsFor - setsAgainst, setsFor, player))
-        
+
     listResults.sort(reverse = True)
     pos = 1
     print " | pos | ", "   Name                ", " | ", " W ", " D ", " L ",
     print "  F ", "  ", " | ", "Points |"
     for player in listResults:
         name = listPlayers[player[3]].getName()
-        
+
         if len(name)<= 25: ## padding name
             name += ' ' * (25-len(name))
         else:
-            name = name[:25]                
-            
+            name = name[:25]
+
         stats = table[player[3]]
         print ' | {:3} | {} | {:3} {:3} {:3} {:4} {:4} | {:5}   |'.format(pos,name,stats["Win"],stats["Draw"],
                                                                           stats["Loss"], stats["For"],
@@ -224,10 +224,10 @@ printTable(table, listPlayers)
 
 
 
-    
 
 
 
-## Must be the last line of code 
+
+## Must be the last line of code
 ##gui.screen.exitonclick()
 
