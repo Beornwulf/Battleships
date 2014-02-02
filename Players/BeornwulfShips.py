@@ -20,16 +20,54 @@ class Player(base_player.BasePlayer):
         defined in the _initBoards method in the file base_player.py
         """
         self._initBoards()
-        destroyer = [(0, 0), (0, 1)]
-        cruiser = [(0, 0), (0, 1), (0, 2)]
-        battleship = [(0, 0), (0, 1), (0, 2), (0, 3)]
-        hovercraft = [(0, 0), (0, 1), (1, 1), (-1, 1), (1, 2), (-1, 2)]
-        aircraftcarrier = [(0, 0), (-1, 0), (1, 0), (0, 1), (0, 2), (0, 3)]
+        destroyer = [[0, 0], [0, 1]]
+        cruiser = [[0, 0], [0, 1], [0, 2]]
+        battleship = [[0, 0], [0, 1], [0, 2], [0, 3]]
+        hovercraft = [[0, 0], [0, 1], [1, 1], [-1, 1], [1, 2], [-1, 2]]
+        aircraftcarrier = [[0, 0], [-1, 0], [1, 0], [0, 1], [0, 2], [0, 3]]
         fleet = [destroyer, cruiser, battleship, hovercraft, aircraftcarrier]
         boardSquares = [(x, y) for x in range(6) for y in range(6)]
         boardSquares.extend((x, y) for x in range(6, 12) for y in range(12))
         for i in fleet:
-
+            isValid = False
+            while isValid is False:
+                r = randint(0, len(boardSquares))
+                keyPoint = boardSquares[r]
+                ship = []
+                for j in i:
+                    square = []
+                    square.append(j[0] + keyPoint[0])
+                    square.append(j[1] + keyPoint[1])
+                    ship.append(square)
+                isValid = True
+                for square in ship:
+                    a, b = square
+                    print "ab is ", a, b
+                    if self._playerBoard[a][b] == const.OCCUPIED:
+                        isValid = False
+                    elif not square in boardSquares:
+                        isValid = False
+                if isValid:
+                    for square in ship:
+                        a, b = square
+                        self._playerBoard[a][b] = const.OCCUPIED
+        #self._playerBoard[0][5]=const.OCCUPIED
+        #self._playerBoard[1][5]=const.OCCUPIED
+        ## Cruiser (3 squares)
+        #self._playerBoard[1][1:4]=[const.OCCUPIED]*3
+        ## Battleship (4 squares)
+        #self._playerBoard[6][6]=const.OCCUPIED
+        #self._playerBoard[6][7]=const.OCCUPIED
+        #self._playerBoard[6][8]=const.OCCUPIED
+        #self._playerBoard[6][9]=const.OCCUPIED
+        ## Hovercraft (6 squares)
+        #self._playerBoard[8][2]=const.OCCUPIED
+        #self._playerBoard[9][1:4]=[const.OCCUPIED]*3
+        #self._playerBoard[10][1:4:2]=[const.OCCUPIED]*2
+        ## Aircraft carrier (6 squares)
+        #self._playerBoard[9][5:9]=[const.OCCUPIED]*4
+        #self._playerBoard[8][5]=const.OCCUPIED
+        #self._playerBoard[10][5]=const.OCCUPIED
         return self._playerBoard
 
     # Decide what move to make based on current state of opponent's board and
