@@ -1,6 +1,6 @@
 import const
 import base_player
-from random import randint
+from random import randint, shuffle
 
 
 class Player(base_player.BasePlayer):
@@ -11,12 +11,48 @@ class Player(base_player.BasePlayer):
         self._playerYear = "1"  # year of study
         self._version = "1.0"  # version of AI
         self._playerDescription = ""
+        self._mode = "hunt"
+        self._allSquares = self.initialiseBoard()
+        self._targets = self.initialiseHunt()
+        self._shots = []
+        self._hits = []
+        self._priorityTargets = []
 
-    # Distribute the fleet onto your board
+    def resetGame(self):
+        self._mode = "hunt"
+        self._allSquares = self.initialiseBoard()
+        self._targets = self.initialiseHunt()
+        self._shots = []
+        self._hits = []
+        self._priorityTargets = []
+
+    def initialiseBoard(self):
+        """
+        Creates a list of all possible board squares.
+        """
+        board = [[x, y] for x in range(6) for y in range(6)]
+        board.extend([x, y] for x in range(6, 12) for y in range(12))
+        return board
+
+    def initialiseHunt(self):
+        """
+        Create an initial list of targets for the hunt phase.
+        Currently a checkerboard pattern.
+        """
+        hunt_targets = []
+        for item in self._allSquares:
+            x, y = item
+            if (x + y) % 2 == 0:
+                hunt_targets.append(item)
+        shuffle(hunt_targets)
+        #print len(hunt_targets)
+        return hunt_targets
+
     def deployFleet(self):
         """
         Deploy fleet in random positions.
         """
+        self.resetGame()
         self._initBoards()
         destroyer = [[0, 0], [0, 1]]
         cruiser = [[0, 0], [0, 1], [0, 2]]
@@ -28,76 +64,90 @@ class Player(base_player.BasePlayer):
         boardSquares.extend([x, y] for x in range(6, 12) for y in range(12))
         for i in fleet:
             isValid = False
-            #print "ship shape:", i
             while isValid is False:
                 r = randint(0, (len(boardSquares) - 1))
                 keyPoint = boardSquares[r]
-                #print "keypoint:", keyPoint
                 ship = []
                 for j in i:
                     square = []
                     square.append(j[0] + keyPoint[0])
                     square.append(j[1] + keyPoint[1])
                     ship.append(square)
-                #print "ship:", ship
                 isValid = True
                 internalValid = False
                 while not internalValid:
                     for square in ship:
-                        a, b = square
+                        x, y = square
                         if not square in boardSquares:
                             isValid = False
-                            #internalValid = False
-                            #print "invalid:", square
-                        elif self._playerBoard[a][b] == const.OCCUPIED:
+                        elif self._playerBoard[x][y] == const.OCCUPIED:
                             isValid = False
-                            #internalValid = False
-                            #print "occupied:", square
-                        #print square, isValid
                         internalValid = True
                 if isValid:
                     for square in ship:
-                        a, b = square
-                        self._playerBoard[a][b] = const.OCCUPIED
-                    #print "ship complete"
-        #self._playerBoard[0][5]=const.OCCUPIED
-        #self._playerBoard[1][5]=const.OCCUPIED
-        ## Cruiser (3 squares)
-        #self._playerBoard[1][1:4]=[const.OCCUPIED]*3
-        ## Battleship (4 squares)
-        #self._playerBoard[6][6]=const.OCCUPIED
-        #self._playerBoard[6][7]=const.OCCUPIED
-        #self._playerBoard[6][8]=const.OCCUPIED
-        #self._playerBoard[6][9]=const.OCCUPIED
-        ## Hovercraft (6 squares)
-        #self._playerBoard[8][2]=const.OCCUPIED
-        #self._playerBoard[9][1:4]=[const.OCCUPIED]*3
-        #self._playerBoard[10][1:4:2]=[const.OCCUPIED]*2
-        ## Aircraft carrier (6 squares)
-        #self._playerBoard[9][5:9]=[const.OCCUPIED]*4
-        #self._playerBoard[8][5]=const.OCCUPIED
-        #self._playerBoard[10][5]=const.OCCUPIED
+                        x, y = square
+                        self._playerBoard[x][y] = const.OCCUPIED
         return self._playerBoard
 
-    # Decide what move to make based on current state of opponent's board and
-    # print it out
     def chooseMove(self):
         """
-        Decide what move to make based on current state of opponent's board and
-        return it
-        # Completely random strategy
-        # Knowledge about opponent's board is completely ignored
+        Derermines phase of attack and calls appropriate method.
+        Exports target square.
         """
-        row = randint(0, 11)
-        if row < 6:
-            # Top half of board, so choose between first and sixth row
-            col = randint(0, 5)
-        else:
-            # Bottom half so choose between first and twelfth row
-            col = randint(0, 11)
-        # Return move in row (letter) + col (number) grid reference
-        # e.g. A3 is represented as 0,2
+        if self._mode == "hunt":
+            target = self.huntMode()
+        elif self._mode == "kill":
+            target = self.killMode()
+        #print len(self._shots), "shots taken"
+        #print "shot at:", self._shots
+        #print len(self._hits), "hits:", self._hits
+        row, col = target
         return row, col
+
+    def huntMode(self):
+        """
+        Selects a random target from the checkerboard of available targets.
+        """
+        #print "available targets:", self._targets
+        if len(self._targets) == 0:
+            for i in self._allSquares:
+                if not i in self._shots:
+                    self._targets.append(i)
+        target = self._targets.pop()
+        self._shots.append(target)
+        return target
+
+    def killMode(self):
+        target_list = []
+        for i in self._hits:
+            a = i[0]
+            b = i[1]
+            target_list.append([a, b + 1])
+            target_list.append([a, b - 1])
+            target_list.append([a + 1, b])
+            target_list.append([a - 1, b])
+        #print "potential priority targets:", target_list
+        for i in target_list:
+            if i in self._priorityTargets:
+                pass
+#                print i, "is in _priorityTargets"
+            elif i in self._shots:
+                pass
+#                print i, "is in _shots"
+            elif not i in self._allSquares:
+                pass
+#                print i, "is off the board"
+            else:
+                self._priorityTargets.append(i)
+        if len(self._priorityTargets) == 0:
+            self._mode = "hunt"
+            target = self.huntMode()
+            return target
+        else:
+            #print "priority targets:", self._priorityTargets
+            target = self._priorityTargets.pop()
+            self._shots.append(target)
+            return target
 
     def setOutcome(self, entry, row, col):
         """
@@ -107,16 +157,21 @@ class Player(base_player.BasePlayer):
         col: (int) the board column (e.g. col 2 is represented by  value 3) so
         A3 case is (0,2)
         """
-#        is_valid = False
         if entry == const.HIT:
-#            is_valid = True
+            shot = [row, col]
+            #print "hit"
             Outcome = const.HIT
+            self._hits.append(shot)
+            #print "hits so far:", self._hits
+            self._mode = "kill"
         elif entry == const.MISSED:
-#            is_valid = True
+            #print "missed"
             Outcome = const.MISSED
         else:
             raise Exception("Invalid input!")
         self._opponenBoard[row][col] = Outcome
+        #print "shots taken:", len(self._shots)
+        #print "shots hit:", len(self._hits)
 
     def getOpponentMove(self, row, col):
         """ You might like to keep track of where your opponent
