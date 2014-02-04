@@ -10,7 +10,7 @@ class Player(base_player.BasePlayer):
         self._playerName = "Beornwulf"
         self._playerYear = "1"  # year of study
         self._version = "1.0"  # version of AI
-        self._playerDescription = ""
+        self._playerDescription = "Basic Hunter-Killer algorithm."
         self._mode = "hunt"
         self._allSquares = self.initialiseBoard()
         self._targets = self.initialiseHunt()
@@ -19,6 +19,9 @@ class Player(base_player.BasePlayer):
         self._priorityTargets = []
 
     def resetGame(self):
+        """
+        Resets internal variables and lists between games.
+        """
         self._mode = "hunt"
         self._allSquares = self.initialiseBoard()
         self._targets = self.initialiseHunt()
@@ -118,6 +121,10 @@ class Player(base_player.BasePlayer):
         return target
 
     def killMode(self):
+        """
+        Once a ship has been found, focuses shots in that area until all squares adjacent to a hit have been targeted.
+        Potential improvement: limit killMode to 6 hits in a phase.
+        """
         target_list = []
         for i in self._hits:
             a = i[0]
