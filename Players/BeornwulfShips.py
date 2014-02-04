@@ -9,7 +9,7 @@ class Player(base_player.BasePlayer):
         base_player.BasePlayer.__init__(self)
         self._playerName = "Beornwulf"
         self._playerYear = "1"  # year of study
-        self._version = "1.0"  # version of AI
+        self._version = "1.1"  # version of AI
         self._playerDescription = "Basic Hunter-Killer algorithm."
         self._mode = "hunt"
         self._allSquares = self.initialiseBoard()
@@ -17,6 +17,7 @@ class Player(base_player.BasePlayer):
         self._shots = []
         self._hits = []
         self._priorityTargets = []
+        self._killCount = 0
 
     def resetGame(self):
         """
@@ -28,6 +29,7 @@ class Player(base_player.BasePlayer):
         self._shots = []
         self._hits = []
         self._priorityTargets = []
+        self._killCount = 0
 
     def initialiseBoard(self):
         """
@@ -123,7 +125,7 @@ class Player(base_player.BasePlayer):
     def killMode(self):
         """
         Once a ship has been found, focuses shots in that area until all squares adjacent to a hit have been targeted.
-        Potential improvement: limit killMode to 6 hits in a phase.
+        Returns to hunt mode after 6 hits.
         """
         target_list = []
         for i in self._hits:
@@ -149,6 +151,12 @@ class Player(base_player.BasePlayer):
         if len(self._priorityTargets) == 0:
             self._mode = "hunt"
             target = self.huntMode()
+            self._killCount = 0
+            return target
+        elif self._killCount > 5:
+            self._mode = "hunt"
+            target = self.huntMode()
+            self._killCount = 0
             return target
         else:
             #print "priority targets:", self._priorityTargets
@@ -171,6 +179,7 @@ class Player(base_player.BasePlayer):
             self._hits.append(shot)
             #print "hits so far:", self._hits
             self._mode = "kill"
+            self._killCount += 1
         elif entry == const.MISSED:
             #print "missed"
             Outcome = const.MISSED
